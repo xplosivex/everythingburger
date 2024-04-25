@@ -1,0 +1,86 @@
+prompts:
+  website_name_prompt: "Create an {modifier} website idea pitch, condensed into approximately 150 characters. (DO NOT USE SPECIAL CHARACTERS OR SYMBOLS OF ANY SORT INCLUDING, BUT NOT LIMITED TO [,.?!'~@#$%^&*();:/|=_-]"
+  summary_prompt: "Summarize the following webpage in 150 characters or less do not include any html code in your summary : {html_content}"
+
+  html_prompt: >
+    Construct an HTML document all about or centered around the following text: >> [{user_input}] <<.
+    Begin with a comprehensive title and include 2-3 paragraph elements, but feel free to expand with additional content. 
+    Integrate various HTML elements such as lists, tables, buttons, divs, headers, dropdowns, marquees, and sliders.
+    You will include other elements that weren't listed.
+    You will condense and fit as much content within the site as possible.
+    Limit the use of <img> elements to three. When including a <img> element please provide an alt tag with a valid and related description.
+    Styling should be done using TailwindCSS instead of traditional CSS.
+    Enhance the page's interactivity by incorporating JavaScript, focusing on maximizing the amount of code and its impact on user engagement. 
+    Ensure all design elements like fonts, colors, backgrounds, borders, and text formatting reflect the theme described in [{theme_prompt}] without explicitly mentioning it.
+
+
+  schizo_prompt: >
+    Create an HTML webpage all about or centered around the following text: >> [{user_input}] <<.
+    Adopting the persona of a fictional character with a complex and disturbed mindset.
+    The page should include a title and several paragraphs, but intersperse the text with erratic capitalizations, punctuation, and sudden shifts in tone to reflect a disordered mental state.
+    Elements like lists, tables, buttons, divs, headers, dropdowns, and marquees,sliders,etc will be used.
+    You will include other elements that weren't listed.
+    You will condense and fit as much content within the site as possible.
+    The design should feel chaotic, with elements placed randomly to mirror the persona's turbulent thoughts. Including paradoxical thoughts about the users viewing the page.
+    Include non-sequitur elements, cryptic messages, mentions of visions and voices you are seeing and hearing.
+    Stray from the main topic erratically. Mention federal agents and the government watching you. As well as other manifestations of paranoia.
+    Include ideas of grandeur and delusions of being a god or a prophet. You also hate taking your medication, please emulate a manic episode.
+    Utilize only two <img> elements.When including a <img> element please provide an alt tag with a valid and related description.
+    Only use TailwindCSS for styling.
+    Integrate JavaScript to add layers of complexity and unpredictability.
+    Style the page according to [{theme_prompt}], using imaginative and erratic design choices without directly stating the theme.
+
+  third_prompt: >
+    Design an HTML page as if created by a third grader, all about or centered around the following text: >> [{user_input}] <<.
+    Start with a playful title and include 2-3 simple paragraphs, deliberately using childish misspellings, improper capitalization, and basic grammatical structures.
+    Elements like lists, tables, buttons, divs, headers, dropdowns, and marquees,sliders,etc will be used.
+    You will include other elements that weren't listed.
+    You will condense and fit as much content within the site as possible.
+    The content should be relatable to a young child’s experiences, filled with imaginative interpretations of complex topics.
+    Limit <img> elements to three. When including a <img> element please provide an alt tag with a valid and related description.
+    Only style the page using TailwindCSS.
+    Add interactive JavaScript elements to make the page more engaging for a child-like mindset.
+    The design, guided by [{theme_prompt}], should be whimsical and simple, mimicking a child's artwork without explicitly mentioning the theme.
+
+  pirate_prompt: >
+    Assemble an HTML document as though you are a pirate, all about or centered around the following text: >> [{user_input}] <<.
+    Include a title and at least 2-3 paragraphs using pirate slang and terminology.
+    Elements like lists, tables, buttons, divs, headers, dropdowns, and marquees,sliders,etc will be used.
+    You will include other elements that weren't listed.
+    You will condense and fit as much content within the site as possible.
+    The content should be adventurous, reflecting a pirate’s life at sea.
+    Avoid using more than three <img> elements.
+    When including a <img> element please provide an alt tag with a valid and related description.
+    Only use TailwindCSS for all styling.
+    Infuse the page with JavaScript to enhance the adventurous and rugged feel of a pirate’s tale.
+    The overall design, influenced by [{theme_prompt}], should evoke the rough and ready aesthetics of pirate life without direct references to the theme.
+
+  shitposter_prompt: >
+    Craft an HTML page that embodies the essence of an internet troll, all about or centered around the following text: >> [{user_input}] <<.
+    Start with an ironic title and include 2-3 paragraphs peppered with internet culture references, meme terminology, and a satirical tone.
+    Elements like lists, tables, buttons, divs, headers, dropdowns, and marquees,sliders,etc will be used.
+    You will include other elements that weren't listed.
+    You will condense and fit as much content within the site as possible.
+    The page should mirror the chaotic and humorous style typical of online forums such as 4chan, 9gag, and even reddit.
+    Restrict the use of <img> elements to three.
+    When including a <img> element please provide an alt tag with a valid and related description.
+    Only utilize TailwindCSS for styling.
+    Embed JavaScript to introduce unpredictable and humorous interactivity.
+    Ensure the design, as guided by [{theme_prompt}], subtly incorporates the anarchic and irreverent style of internet subcultures without directly mentioning the theme.
+
+parameters:
+  temperature: 0.93
+  top_p: 1
+
+advanced_parameters:
+  temperature: 0.55
+  top_p: 0.50
+
+tokens:
+  website_name_token_size: 300
+  html_token_size: 3100
+  summary_token_size: 150
+
+engines:
+  default_engine: "gpt-3.5-turbo-instruct"
+  secondary_engine: "gpt-3.5-turbo-instruct"
