@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet"
+        />
+        <title>{{ current_user.username }}'s Completed Challenges</title>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    </head>
+    <body
+        class="antialiased bg-fixed bg-center bg-cover bg-no-repeat"
+        style="
+            background-image: url(&quot;https://t3.ftcdn.net/jpg/00/65/47/90/360_F_65479071_5hGl2iiCLvCzGbCyQbDEKWm2chQm9XF5.jpg&quot;);
+            font-family: &quot;Roboto&quot;, sans-serif;
+        "
+    >
+        <div class="container max-w-4xl mx-auto py-24">
+            <!-- Dynamic Username Title Placeholder, populated with current_user by default -->
+            <h1
+                id="usernameTitle"
+                class="text-4xl font-bold text-center text-white mb-8"
+            >
+                {{ current_user.username | escape }}'s Challenges Overview
+            </h1>
+            <div class="container max-w-md mx-auto my-4 p-4 rounded shadow">
+                <form id="searchForm" class="text-center">
+                    <input
+                        type="text"
+                        id="usernameSearch"
+                        placeholder="Enter username..."
+                        class="rounded p-2 text-black"
+                        required
+                    />
+                    <button
+                        type="submit"
+                        class="bg-red-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    >
+                        Search
+                    </button>
+                </form>
+            </div>
+            <div id="challengesContainer" class="space-y-4"></div>
+        </div>
+        <script>
+            // Fetch challenges for the current user on page load
+            document.addEventListener("DOMContentLoaded", function () {
+                fetchUserChallenges("{{ current_user.username }}");
+            });
+
+            document
+                .getElementById("searchForm")
+                .addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    const username =
+                        document.getElementById("usernameSearch").value;
+                    fetchUserChallenges(username);
+                });
+
+            function fetchUserChallenges(username) {
+                document.getElementById("usernameTitle").innerText =
+                    `${username}'s Challenges Overview`; // Dynamically update title
+
+                axios
+                    .get(`/api/completed-challenges/${username}`)
+                    .then(function (response) {
+                        const challengesContainer = document.getElementById(
+                            "challengesContainer",
+                        );
+                        challengesContainer.innerHTML = ""; // Clear existing challenges
+                        response.data.forEach((challenge) => {
+                            const challengeElem = document.createElement("div");
+                            challengeElem.classList.add(
+                                "rounded",
+                                "shadow-md",
+                                "border-2",
+                                "font-bold",
+                                "border-black",
+                                "bg-opacity-60",
+                                "bg-black",
+                                "mx-auto",
+                                "text-white",
+                            );
+
+                            let statusBadge = challenge.completed
+                                ? '<span class="inline-block bg-green-500 text-green-800 text-xs px-2 rounded-full uppercase font-semibold tracking-wide">Completed</span>'
+                                : '<span class="inline-block bg-red-500 text-red-800 text-xs px-2 rounded-full uppercase font-semibold tracking-wide">Not Completed</span>';
+
+                            let completionDate = challenge.completed
+                                ? `<p class="mt-2 text-gray-400">Completed on: ${challenge.completion_date}</p>`
+                                : "";
+
+                            challengeElem.innerHTML = `<h3 class="text-xl text-white font-semibold">${challenge.title} ${statusBadge}</h3>
+                                                   <p class="mt-1 text-gray-200">${challenge.description}</p>
+                                                   ${completionDate}`;
+
+                            challengesContainer.appendChild(challengeElem);
+                        });
+                    })
+                    .catch(function (error) {
+                        console.error(error);
+                    });
+            }
+        </script>
+    </body>
+</html>

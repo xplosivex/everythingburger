@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="google-adsense-account" content="ca-pub-3128204402001504" />
+        <meta charset="utf-8" />
+        <title>Generated HTML</title>
+
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            rel="icon"
+            href="https://cdn.icon-icons.com/icons2/1447/PNG/64/32382hamburger_98925.png"
+        />
+    </head>
+    <body class="text-lg pt-10">
+        <form id="regenerate-form" method="post" action="/">
+            <input type="hidden" name="user_input" value="{{ user_input }}" />
+            <input type="hidden" name="theme" value="{{ description }}" />
+            <input type="hidden" name="safe_images" value="{{ safe }}" />
+            <input type="hidden" name="mode" value="{{ mode }}" />
+            <input
+                type="hidden"
+                name="page_visibility"
+                value="{{ visibility }}"
+            />
+        </form>
+        <nav-bar></nav-bar>
+        <div class="pt-10"></div>
+        <div
+            id="dynamic-container"
+            class="container mx-auto relative z-0"
+            style="contain: content"
+        >
+            {{ generated_html | safe }}
+        </div>
+        <script>
+            customElements.define(
+                "nav-bar",
+                class extends HTMLElement {
+                    constructor() {
+                        super();
+                        this.attachShadow({ mode: "open" });
+                        this.shadowRoot.innerHTML = `
+                    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+                    <style>
+                        .nav-bar-button:disabled {
+                            background-color: grey;
+                            cursor: not-allowed;
+                        }
+                    </style>
+                    <div class="nav-bar-container fixed top-0 right-0 left-0 bg-gray-100 p-1 shadow-lg z-50">
+                        <div class="max-w-screen-md mx-auto">
+                            <div class="nav-bar-buttons flex flex-wrap justify-around p-2">
+                                <button id="regenerate"
+                                        class="nav-bar-button bg-red-500 text-white px-4 py-2 rounded-lg text-lg cursor-pointer mb-2">
+                                        Regenerate
+                                </button>
+                                <button id="download"
+                                        class="nav-bar-button bg-red-500 text-white px-4 py-2 rounded-lg text-lg cursor-pointer mb-2">
+                                        Download
+                                </button>
+                                <button id="save"
+                                        class="nav-bar-button bg-red-500 text-white px-4 py-2 rounded-lg text-lg cursor-pointer mb-2">
+                                        Favorite
+                                </button>
+                                <button id="back-button"
+                                        class="nav-bar-button bg-red-500 text-white px-4 py-2 rounded-lg text-lg cursor-pointer mb-2">
+                                        Back
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                        this.attachButtonListeners();
+                    }
+
+                    attachButtonListeners() {
+                        const regenerateButton =
+                            this.shadowRoot.querySelector("#regenerate");
+                        regenerateButton.addEventListener("click", () => {
+                            regenerateButton.disabled = true;
+                            document.getElementById("regenerate-form").submit();
+                        });
+
+                        const downloadButton =
+                            this.shadowRoot.querySelector("#download");
+                        downloadButton.addEventListener("click", () =>
+                            window.downloadPage(),
+                        );
+
+                        const saveButton =
+                            this.shadowRoot.querySelector("#save");
+                        saveButton.addEventListener("click", () => {
+                            saveButton.disabled = true;
+                            window.savePage(() => (saveButton.disabled = true));
+                        });
+
+                        const backButton =
+                            this.shadowRoot.querySelector("#back-button");
+                        backButton.addEventListener(
+                            "click",
+                            () => (window.location.href = "/"),
+                        );
+                    }
+                },
+            );
+
+            window.downloadPage = function () {
+                const dynamicContainer =
+                    document.getElementById("dynamic-container");
+                const htmlContent = dynamicContainer.innerHTML;
+                const blob = new Blob([htmlContent], { type: "text/html" });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "generated_page.html";
+                document.body.appendChild(a);
+                a.click();
+
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+
+            window.savePage = async function (callback) {
+                const htmlContent =
+                    document.getElementById("dynamic-container").innerHTML;
+                const user_input = document.querySelector(
+                    'input[name="user_input"]',
+                ).value;
+                const theme = document.querySelector(
+                    'input[name="theme"]',
+                ).value;
+                const page_visibility = document.querySelector(
+                    'input[name="page_visibility"]',
+                ).value;
+                const safe_images = document.querySelector(
+                    'input[name="safe_images"]',
+                ).value;
+                const mode = document.querySelector(
+		    'input[name="mode"]',
+		).value
+                try {
+                    const response = await fetch("/save-page", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            html_content: htmlContent,
+                            user_input: user_input,
+                            theme: theme,
+                            page_visibility: page_visibility,
+                            safe: safe_images,
+                            mode: mode,
+			}),
+                    });
+                    if (response.ok) {
+                        alert("Page saved successfully!");
+                        callback();
+                    } else {
+                        alert("Failed to save the page.");
+                    }
+                } catch (error) {
+                    console.error("Save operation failed:", error);
+                    alert("Error while saving the page.");
+                }
+            };
+        </script>
+    </body>
+</html>

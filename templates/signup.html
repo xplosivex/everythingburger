@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="google-adsense-account" content="ca-pub-3128204402001504" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Signup</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet"
+        />
+        <link
+            rel="icon"
+            href="https://cdn.icon-icons.com/icons2/1447/PNG/64/32382hamburger_98925.png"
+        />
+        <style>
+            body {
+                background-image: url("https://t3.ftcdn.net/jpg/00/65/47/90/360_F_65479071_5hGl2iiCLvCzGbCyQbDEKWm2chQm9XF5.jpg");
+                background-size: cover;
+                background-attachment: fixed;
+            }
+            form {
+                background-color: rgba(0, 0, 0, 0.5);
+            }
+            button,
+            a {
+                transition: background-color 0.2s ease-in-out;
+            }
+        </style>
+        <script>
+            function validateUsername(username) {
+                const regex = /^[a-zA-Z0-9]{1,16}$/;
+                return regex.test(username);
+            }
+
+            async function submitForm(event) {
+                event.preventDefault();
+                const username = document.getElementById("username").value;
+                if (!validateUsername(username)) {
+                    alert(
+                        "Username must contain only letters and numbers, and be no longer than 16 characters.",
+                    );
+                    return;
+                }
+
+                const formData = new FormData(event.target);
+                const response = await fetch("/signup", {
+                    method: "POST",
+                    body: formData,
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(
+                        `Signup successful. Your reset string: ${result.reset_string}. Please remember to save it securely.`,
+                    );
+                    setTimeout(
+                        () =>
+                            alert(
+                                "Please make sure to write down your reset string.",
+                            ),
+                        3000,
+                    );
+                } else {
+                    alert(result.message);
+                }
+            }
+        </script>
+    </head>
+    <body class="flex items-center justify-center min-h-screen">
+        <div class="w-full max-w-xs">
+            <form
+                onsubmit="submitForm(event)"
+                class="rounded px-8 pt-6 pb-8 mb-4"
+            >
+                <div class="mb-4">
+                    <label
+                        class="block text-white text-sm font-bold mb-2"
+                        for="username"
+                        >Username</label
+                    >
+                    <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        placeholder="Username"
+                        maxlength="16"
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-black-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-700 text-white"
+                    />
+                </div>
+                <div class="mb-6">
+                    <label
+                        class="block text-white text-sm font-bold mb-2"
+                        for="password"
+                        >Password</label
+                    >
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        placeholder="******************"
+                        required
+                        class="shadow appearance-none border rounded w-full py-2 px-3 text-black-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-700 text-white"
+                    />
+                </div>
+                <div class="flex items-center justify-between">
+                    <button
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                        type="submit"
+                    >
+                        Sign Up
+                    </button>
+                </div>
+            </form>
+            <div
+                class="bg-black font-bold bg-opacity-50 shadow-md rounded px-8 pt-6 pb-8 mb-4"
+            >
+                <p class="text-white">
+                    All signed up?
+                    <a href="/login" class="text-red-500 hover:text-red-700"
+                        >Login</a
+                    >
+                </p>
+
+                <p class="text-white">
+                    Forgot password?
+                    <a
+                        href="/reset-password"
+                        class="text-red-500 hover:text-red-700"
+                        >Reset</a
+                    >
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

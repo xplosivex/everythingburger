@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="google-adsense-account" content="ca-pub-3128204402001504">
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet"
+        />
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+            rel="stylesheet"
+        />
+        <link
+            rel="icon"
+            href="https://cdn.icon-icons.com/icons2/1447/PNG/64/32382hamburger_98925.png"
+        />
+        <title>HTML Generator</title>
+        <style>
+        /* Tooltip Container & Content */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .tooltip-content {
+            position: absolute;
+            z-index: 10;
+            width: 280px;
+            bottom: 100%;
+            border: white solid 2px;
+            left: 50%;
+            margin-left: -280px; /* Half of the width to center the tooltip */
+            text-align: left;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            background-color: black;
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            font-size: 14px;
+        }
+
+        .tooltip-container:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .disabled-dropdown {
+            pointer-events: none;
+            background-color: #D1D5DB; /* Tailwind's 'bg-gray-400' Hex; Ensure it's the desiring grey */
+            color: #9CA3AF; /* Tailwind's 'text-gray-500'; Adjust if needed */
+            /* Add more styles if needed to mimic your disabled look */
+        }
+
+        </style>
+    </head>
+
+    <body
+        class="bg-fixed min-h-screen flex flex-col items-center justify-center bg-cover"
+        style="
+            background-image: url(&quot;https://t3.ftcdn.net/jpg/00/65/47/90/360_F_65479071_5hGl2iiCLvCzGbCyQbDEKWm2chQm9XF5.jpg&quot;);
+        "
+    >
+        <div class="flex justify-center gap-4 mb-4">
+            <a href="/challenges" class="bg-red-500 text-white py-2 px-4 text-xl rounded hover:bg-red-700 transition duration-150 ease-in-out">Challenges</a>
+            <a href="/profile" class="bg-red-500 text-white py-2 px-4 text-xl rounded hover:bg-red-700 transition duration-150 ease-in-out">Profile</a>
+            <a href="/logout" class="bg-red-500 text-white py-2 px-4 text-xl rounded hover:bg-red-700 transition duration-150 ease-in-out">Sign Out</a>
+        </div>
+        <div
+            class="container mx-auto p-8 bg-opacity-50 bg-black rounded-lg shadow-lg w-11/12 md:w-3/4 lg:w-1/2"
+        >
+            <h1
+                class="text-2xl text-white font-bold text-center mb-4 py-4 border-b-2 border-black"
+            >
+                🍔 Welcome {{ current_username }} To The Everything Burger 🍔
+            </h1>
+            <p class="text-2xl text-white font-bold text-center mb-4 py-4 border-b-2 border-black">
+
+                <i id="info-icon" class="fas fa-info-circle cursor-pointer" style="color: white;"></i>
+                <span
+                    id="tooltip"
+                    class="hidden absolute text-xs p-2 bg-black rounded border-2 border-gray-400 max-w-xs"
+                >
+                    Sesame seeds can be spent in the shop and are earned by posting comments, generating, and saving pages.
+                </span>
+                Current sesame seeds:{{ sesame_seeds }}
+            </p>            <button
+                id="generate-name"
+                class="w-full bg-gray-600 text-white py-2 px-4 text-2xl rounded mt-4 border-2 border-black"
+            >
+                Generate Website Concept
+            </button>
+            <div class="pt-3">
+            <div class="flex flex-row space-x-4 items-center w-full text-white rounded max-w-md mx-auto">
+                <select id="templateDropdown" class="bg-gray-600 p-2 rounded border w-1/4 flex-grow">
+                    <!-- Template options will be populated here -->
+                </select>
+                <button id="saveBtn" class="bg-green-500 text-white px-4 py-2 rounded">Save</button>
+                <button id="loadBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Load</button>
+                <button id="deleteBtn" class="bg-red-500 text-white px-4 py-2 rounded">Delete</button>
+                <div class="tooltip-container ml-2 flex items-center">
+                    <i id="template-icon" class="fas fa-info-circle cursor-pointer text-white"></i>
+                    <span id="template-tooltip" class="hidden tooltip-content">
+                        This the templates section. Where you can save, load, and delete your templates. Templates are saved per user. A template is a saved configuration of your current prompt and paramaters.
+                    </span>
+                </div>
+            </div>
+
+            </div>
+            <form method="post" id="main-form" class="mt-4">
+                <textarea
+                    class="w-full p-2 text-xl border-2 border-black rounded bg-gray-700 text-white resize-none"
+                    id="user_input"
+                    name="user_input"
+                    rows="4"
+                    placeholder="Enter your text here..."
+                    maxlength="{{ prompt_length }}"
+                ></textarea>
+                <div class="flex items-center justify-between mb-2 relative">
+                    <select name="theme" id="theme" class="w-full p-2 text-xl appearance-none border-2 border-black rounded bg-gray-700 text-white pl-8">
+                        {% if theme_groups|length == 1 %}
+                            {% for theme in theme_groups %}
+                            <option value="{{ theme.description }}" selected>Theme: {{     theme.name }}</option>
+                            {% endfor %}
+                        {% else %}
+                            {% for theme in theme_groups %}
+                            <option value="{{ theme.description }}">Theme: {{ theme.name }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+
+                    <div class="tooltip-container ml-2 flex items-center">
+                        <i id="theme-info-icon" class="fas fa-info-circle cursor-pointer text-white"></i>
+                        <span id="theme-tooltip" class="hidden tooltip-content">
+                            The theme affects how your page is generated, pushing the algorithm towards the selected theme. Results may not always align perfectly with the chosen theme, but it will attempt to do so.
+                        </span>
+                    </div>
+
+                </div>
+
+                <!-- Visibility Dropdown with Tooltip -->
+                <div class="flex items-center justify-between relative">
+                    <select name="page_visibility" id="page_visibility" class="w-full p-2 text-xl appearance-none border-2 border-black rounded bg-gray-700 text-white mt-1">
+                        <option value="listed">   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Listed page</option>
+                        <option value="unlisted">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Unlisted page</option>
+                    </select>
+                    <div class="tooltip-container ml-2 flex items-center">
+                        <i id="visibility-info-icon" class="fas fa-info-circle cursor-pointer text-white"></i>
+                        <span id="visibility-tooltip" class="hidden tooltip-content">
+                            Listed pages will show up publicly under "Browse" and your profile. Unlisted pages will only be visible to you under your profile. Although protected, unlisted pages are still shareable.
+                        </span>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between relative">
+                    <select name="safe_images" id="safe_images" class="w-full p-2 text-xl appearance-none border-2 border-black rounded bg-gray-700 text-white mt-1">
+                        <option value="active"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Safe Images</option>
+                        <option value="off">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Unsafe Images</option>
+                    </select>
+                    <div class="tooltip-container ml-2 flex items-center">
+                        <i id="safe-icon" class="fas fa-info-circle cursor-pointer text-white"></i>
+                        <span id="safe-tooltip" class="hidden tooltip-content">
+                            When the agorithm decides to insert images these two options will determine how an image is selected. With Save Images you will receive no nsfw content with Unsafe Images you may recieve nsfw images, however your page will be forced into an unlisted status
+                        </span>
+                    </div>
+                </div>
+                {% if owned_modes|length > 1 %}
+                <div class="flex items-center justify-between mt-4 relative">
+                    <select name="mode" id="mode" class="w-full p-2 text-xl appearance-none border-2 border-black rounded bg-gray-700 text-white">
+                        {% for mode in owned_modes %}
+                            <option value="{{ mode }}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{mode.replace("_", " ") | capitalize }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="tooltip-container ml-2 flex items-center">
+                        <i id="mode-icon" class="fas fa-info-circle cursor-pointer text-white"></i>
+                        <span id="mode-tooltip" class="hidden tooltip-content">
+                            The mode will push the algorithm to generate the page in the selected persona changing the overall tone of the page.
+                        </span>
+                    </div>
+                </div>
+                {% else %}
+                <input type="hidden" name="mode" value="regular">
+                {% endif %}
+                <button
+                    type="submit"
+                    class="w-full bg-red-500 text-white py-2 px-4 text-2xl rounded mt-4 border-2 border-black"
+                >
+                    Submit
+                </button>
+            </form>
+            <div
+                class="container mx-auto p-8 bg-opacity-50 bg-black rounded-lg shadow-lg w-full md:w-full lg:w-full my-5"
+            >
+                <div class="grid grid-cols-2 gap-4 text-white">
+                    <div class="stat-card p-4 bg-gray-700 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold">Total Pages Saved</h2>
+                        <p class="text-3xl">{{ total_files }}</p>
+                    </div>
+                    <div class="stat-card p-4 bg-gray-700 rounded-lg shadow">
+                        <h2 class="text-xl font-semibold">
+                            Page Generation Count
+                        </h2>
+                        <p class="text-3xl">{{ page_generation_count }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center text-xl mt-6">
+                           <div class="flex flex-col justify-center items-center gap-4 sm:flex-row">
+                <a href="/browse" class="bg-red-500 text-white py-2 px-8 text-2xl rounded border-2 border-black w-full sm:w-auto">Browse Files</a>
+                <a href="/leaderboard" class="bg-red-500 text-white py-2 px-8 text-2xl rounded border-2 border-black w-full sm:w-auto">Leaderboard</a>
+                <a href="/shop" class="bg-red-500 text-white py-2 px-8 text-2xl rounded border-2 border-black w-full sm:w-auto">Shop</a>
+                           </div>
+                           <p class="text-white">
+                               By using this site, you agree to our
+                               <a
+                                   href="{{ url_for('view_policy') }}""
+                                   class="text-red-500 hover:text-red-700"
+                                   >Full Use Policy</a
+                               >.
+                           </p>
+            </div>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script>
+            // You should remove all JavaScript related to advancing options manipulation which are no longer necessary.
+            // Below JS is primarily for the button to fill textarea with fetched name.
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const form = document.getElementById("main-form");
+                const userInputElement = document.getElementById("user_input");
+                const generateNameBtn =
+                    document.getElementById("generate-name");
+
+                generateNameBtn.addEventListener("click", async (e) => {
+                    e.preventDefault();
+                    const res = await fetch("/generate_name", {
+                        method: "POST",
+                    });
+                    const data = await res.json();
+                    let filteredName = data.name.replace(/[^a-zA-Z0-9- ]/g, "");
+                    userInputElement.value = filteredName;
+                });
+
+                form.addEventListener("submit", (e) => {
+                    const userInputValue = userInputElement.value.trim();
+                    if (!checkInputValue(userInputValue)) {
+                        e.preventDefault();
+                        alert(
+                            "Field cannot be empty, contain only whitespace, or contain disallowed characters",
+                        );
+                    }
+                });
+
+                // Check the input value
+                function checkInputValue(value) {
+                    Pass
+                }
+            });
+        </script>
+        <script>
+        let handleSafeImagesChange; // Declare the function handle at global scope
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Define the function here so it's tied to DOM elements but assign it to the global handle
+            handleSafeImagesChange = function() {
+                const safeImagesDropdown = document.getElementById("safe_images");
+                const pageVisibilityDropdown = document.getElementById('page_visibility');
+                if (safeImagesDropdown.value === "off") {
+                    pageVisibilityDropdown.value = "unlisted";
+                    pageVisibilityDropdown.classList.add("disabled-dropdown");
+                    pageVisibilityDropdown.classList.remove("bg-gray-700");
+                } else {
+                    pageVisibilityDropdown.classList.remove("disabled-dropdown");
+                    pageVisibilityDropdown.classList.add("bg-gray-700");
+                }
+            };
+
+            // Rest of the initialization code...
+            // E.g., attach event listeners to your DOM elements:
+            const safeImagesDropdown = document.getElementById("safe_images");
+            safeImagesDropdown.addEventListener('change', handleSafeImagesChange);
+
+            // Don't forget to call handleSafeImagesChange initially if needed
+            handleSafeImagesChange();
+        });
+        </script>
+        <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            const infoIcon = document.getElementById("info-icon");
+            const tooltip = document.getElementById("tooltip");
+
+            const templateIcon = document.getElementById("template-icon");
+            const templateTooltip = document.getElementById("template-tooltip");
+
+            const themeInfoIcon = document.getElementById("theme-info-icon");
+            const themeTooltip = document.getElementById("theme-tooltip");
+
+            const visibilityInfoIcon = document.getElementById("visibility-info-icon");
+            const visibilityTooltip = document.getElementById("visibility-tooltip");
+
+            const safeIcon = document.getElementById("safe-icon");
+            const safeTooltip = document.getElementById("safe-tooltip");
+
+            const modeIcon = document.getElementById("mode-icon");
+            const modeTooltip = document.getElementById("mode-tooltip")
+
+            function toggleTooltip(tooltipElement) {
+                const isHidden = tooltipElement.classList.contains("hidden");
+                if (isHidden) {
+                    tooltipElement.classList.remove("hidden");
+                } else {
+                    tooltipElement.classList.add("hidden");
+                }
+            }
+
+            infoIcon.addEventListener("mouseenter", () => toggleTooltip(tooltip));
+            infoIcon.addEventListener("mouseleave", () => toggleTooltip(tooltip));
+            infoIcon.addEventListener("click", () => toggleTooltip(tooltip));
+
+            themeInfoIcon.addEventListener("mouseenter", () => toggleTooltip(themeTooltip));
+            themeInfoIcon.addEventListener("mouseleave", () => toggleTooltip(themeTooltip));
+            themeInfoIcon.addEventListener("click", () => toggleTooltip(themeTooltip));
+
+            visibilityInfoIcon.addEventListener("mouseenter", () => toggleTooltip(visibilityTooltip));
+            visibilityInfoIcon.addEventListener("mouseleave", () => toggleTooltip(visibilityTooltip));
+            visibilityInfoIcon.addEventListener("click", () => toggleTooltip(visibilityTooltip));
+
+            safeIcon.addEventListener("mouseenter", () => toggleTooltip(safeTooltip));
+            safeIcon.addEventListener("mouseleave", () => toggleTooltip(safeTooltip));
+            safeIcon.addEventListener("click", () => toggleTooltip(safeTooltip));
+
+            modeIcon.addEventListener("mouseenter", () => toggleTooltip(modeTooltip));
+            modeIcon.addEventListener("mouseleave", () => toggleTooltip(modeTooltip));
+            modeIcon.addEventListener("click", () => toggleTooltip(modeTooltip));
+
+            templateIcon.addEventListener("mouseenter", () => toggleTooltip(templateTooltip));
+            templateIcon.addEventListener("mouseleave", () => toggleTooltip(templateTooltip));
+            templateIcon.addEventListener("click", () => toggleTooltip(templateTooltip));
+
+        });
+        </script>
+        <script>
+            async function loadTemplates() {
+                try {
+                    const response = await axios.get('/load/templates');
+                    const templates = response.data;
+                    const dropdown = document.getElementById('templateDropdown');
+                    dropdown.innerHTML = templates.map(template =>
+                        `<option value="${template.template_id}">${template.template_name}</option>`
+                    ).join('');
+                } catch (error) {
+                    console.error("Error loading templates:", error);
+                }
+            }
+
+            document.getElementById('loadBtn').addEventListener('click', async () => {
+                const selectedTemplateId = document.getElementById('templateDropdown').value;
+                try {
+                    // Assuming the load templates endpoint can also be used to fetch single template details by ID
+                    const response = await axios.get(`/load/templates/${selectedTemplateId}`);
+                    const template = response.data;
+                    // Now populate the form fields with the fetched template details
+                    document.getElementById('user_input').value = template.user_input;
+                    document.getElementById('theme').value = template.theme;
+                    document.getElementById('page_visibility').value = template.visibility;
+                    document.getElementById('safe_images').value = template.safe ? 'active' : 'off';
+                    try{
+                    document.getElementById('mode').value = template.mode;
+                    } catch {
+                        console.log("No mode found but that's okay the backend will handle this.");
+                    }
+                    handleSafeImagesChange()
+                    alert(`Loaded template: ${template.template_name}`);
+                } catch (error) {
+                    console.error(`Error loading template with ID: ${selectedTemplateId}`, error);
+                    alert("Failed to load the selected template.");
+                }
+            });
+
+            document.getElementById('deleteBtn').addEventListener('click', async () => {
+                const selectedTemplateId = document.getElementById('templateDropdown').value;
+                try {
+                    await axios.delete(`/templates/${selectedTemplateId}`);
+                    console.log(`Deleted template with ID: ${selectedTemplateId}`);
+                    await loadTemplates(); // Reload templates after deletion
+                } catch (error) {
+                    console.error(`Error deleting template with ID: ${selectedTemplateId}`, error);
+                }
+            });
+
+            // Initially load templates when the page is ready
+            loadTemplates();
+        </script>
+        <script>
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const user_input = document.getElementById('user_input').value;
+            if (!user_input.trim()) {
+                alert('Cannot save template with empty input.');
+                return;
+            }
+            const theme = document.getElementById('theme').value;
+            const visibility = document.getElementById('page_visibility').value;
+            const safe = document.getElementById('safe_images').value === 'active';
+
+            let mode = "";
+            if(document.getElementById('mode')) {
+                mode = document.getElementById('mode').value;
+            } else {
+                mode = 'regular_mode'; // Default value if not available
+            }
+            const postData = {
+                user_input: user_input,
+                theme: theme,
+                visibility: visibility,
+                safe: safe,
+                mode: mode,
+            };
+
+            try {
+                const response = await axios.post('/save/templates', postData);
+                if (response.status === 201) {
+                    alert('Template saved successfully!');
+                    loadTemplates(); // Reload templates to include the new one
+                }
+            } catch (error) {
+                if(error.response && error.response.status === 403) {
+                    alert('Template limit reached. You can only save up to 10 templates.');
+                } else {
+                    console.error('Error saving template:', error);
+                    alert('Failed to save the template. Please try again later.');
+                }
+            }
+        });
+        </script>
+    </body>
+</html>

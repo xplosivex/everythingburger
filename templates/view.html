@@ -1,0 +1,54 @@
+<html>
+    <head>
+        <meta name="google-adsense-account" content="ca-pub-3128204402001504" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Page Viewer</title>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+        />
+    </head>
+    <body>
+        <button
+            class="bg-red-500 text-white px-4 py-2 rounded-lg text-lg cursor-pointer mt-4"
+            id="action-button"
+        >
+            Download This Page
+        </button>
+        <div>{{ page.html_content | safe }}</div>
+    </body>
+    <script>
+        document
+            .getElementById("action-button")
+            .addEventListener("click", function () {
+                // Clone the document body to manipulate the content without altering the page
+                var clone = document.body.cloneNode(true);
+
+                // Remove the action-button from the cloned content
+                var downloadButton = clone.querySelector("#action-button");
+                if (downloadButton) {
+                    downloadButton.remove();
+                }
+
+                // Prepare the content of the cloned body for download
+                const htmlContent =
+                    "<html>\r\n<head>\r\n" +
+                    document.getElementsByTagName("head")[0].innerHTML +
+                    "\r\n</head>\r\n<body>\r\n" +
+                    clone.innerHTML +
+                    "\r\n</body>\r\n</html>";
+                const blob = new Blob([htmlContent], { type: "text/html" });
+                const url = URL.createObjectURL(blob);
+
+                // Create an 'a' element for initiating download
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "downloaded_page.html"; // Specify the name of the download file here
+                document.body.appendChild(a);
+                a.click(); // Programmatically click the element to trigger the download
+                document.body.removeChild(a); // Clean up by removing the element
+                URL.revokeObjectURL(url); // Release the created object URL
+            });
+    </script>
+</html>

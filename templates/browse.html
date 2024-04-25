@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="google-adsense-account" content="ca-pub-3128204402001504">
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1, shrink-to-fit=no"
+        />
+        <title>Browse Saved Pages</title>
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    </head>
+    <body
+        class="antialiased bg-fixed bg-center bg-cover bg-no-repeat"
+        style="
+            background-image: url(&quot;https://t3.ftcdn.net/jpg/00/65/47/90/360_F_65479071_5hGl2iiCLvCzGbCyQbDEKWm2chQm9XF5.jpg&quot;);
+            font-family: &quot;Roboto&quot;, sans-serif;
+        "
+    >
+        <div class="container mx-auto p-4">
+            <div class="flex justify-center">
+                            <div class="flex justify-center mb-8">
+                                <input
+                                    type="text"
+                                    id="search-input"
+                                    class="p-2 rounded"
+                                    placeholder="Search..."
+                                    oninput="search()"
+                                />
+                            </div>
+                        </div>
+            </div>
+            <ul id="page-list" class="divide-y divide-gray-200">
+                <!-- Dynamic content will be inserted here -->
+            </ul>
+        </div>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                search(); // Load pages without a search query initially to show all results
+            });
+
+            async function search() {
+                const query =
+                    document.getElementById("search-input").value || ""; // Adjust based on query
+                const url = `/api/pages${query ? "?query=" + encodeURIComponent(query) : ""}`; // Use the /api/pages for searching
+                try {
+                    const response = await axios.get(url);
+                    const pages = response.data;
+                    updateList(pages); // Function to update the list with search results or all pages
+                } catch (error) {
+                    console.error("Error fetching pages: ", error);
+                }
+            }
+
+            function updateList(pages) {
+                const ul = document.getElementById("page-list");
+                ul.innerHTML = ""; // Clear the list
+                pages.forEach((page) => {
+                    const li = document.createElement("li");
+                    li.className =
+                        "p-2 sm:p-4 rounded shadow-md border-2 font-bold border-black bg-opacity-60 bg-black mx-auto mb-4 w-2/3 text-white";
+                    li.innerHTML = `
+                    <div class="flex justify-between">
+                        <a href="/view/${page.uuid}" class="block bg-red-500 text-white px-2 sm:px-4 py-1 rounded hover:bg-black-600 text-sm">
+                            ${page.user_input} - View
+                        </a>
+                    </div>
+                    <div class="mt-2">
+                        Theme: ${page.theme}<br>
+                        Summary: ${page.summary}<br>
+                         Created by: <div class="inline-flex items-center"><img class="inline-block h-5 w-5 mr-2 rounded-full" src="${page.profile_picture}" alt="Profile picture"><a class="inline-block" href="/profile/${page.username}">${page.username}</a></div><br>
+                        Date: ${page.created_at}<br>
+                    </div>
+                    <span>
+                        ${page.likes} <button onclick="toggleLike('${page.uuid}')">👍</button>
+                        | ${page.comments.length} 💬 <button onclick="toggleComments('${page.uuid}', this)">Expand</button>
+                    </span>
+                    <div class="border-t border-gray-200 my-4"></div>
+                    <div class="comments hidden">
+                        <ul>
+                            ${page.comments.map((comment) => `
+                            <li class="flex items-center">
+
+                            <img class="inline-block h-5 w-5 mr-2 rounded-full" src="${comment.profile_image}" alt="Profile picture">
+                            <a href="/profile/${comment.username}">${comment.username}</a>&nbsp;&nbsp;
+                            <small>${new Date(comment.created_at).toLocaleString()}</small><br>       
+			    <br> <p> : ${comment.text} </p>
+			     </li>`).join("")}
+                        </ul>
+                        <textarea id="comment-text-${page.uuid}" rows="2" class="form-textarea mt-1 text-black block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                        <button onclick="postComment('${page.uuid}')">Post Comment</button>
+                    </div>
+                `;
+                    ul.appendChild(li);
+                });
+            }
+
+            async function toggleLike(uuid) {
+                try {
+                    await axios.post(`/like_page/${uuid}`);
+                    search(); // Reload pages to reflect the like change
+                } catch (error) {
+                    console.error("Failed to like page", error);
+                }
+            }
+
+            async function postComment(uuid) {
+                const commentText = document.getElementById(
+                    `comment-text-${uuid}`,
+                ).value;
+                const formData = new FormData(); // Use FormData to send as form data
+                formData.append("comment", commentText);
+
+                try {
+                    await axios({
+                        method: "post",
+                        url: `/comment_page/${uuid}`,
+                        data: formData,
+                        headers: { "Content-Type": "multipart/form-data" },
+                    });
+                    search(); // Reload pages to reflect the new comment
+                } catch (error) {
+                    console.error("Failed to post comment", error);
+                }
+            }
+
+            function toggleComments(uuid, button) {
+                const commentsContainer = button
+                    .closest("li")
+                    .querySelector(".comments");
+                commentsContainer.classList.toggle("hidden");
+            }
+        </script>
+    </body>
+</html>

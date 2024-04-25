@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="google-adsense-account" content="ca-pub-3128204402001504" />
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+            rel="stylesheet"
+        />
+        <style>
+        #spinning-burger {
+            animation: spin 4s linear infinite;
+        }
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg) scale(1);
+                    filter: hue-rotate(0deg);
+                    opacity: 1;
+                }
+                25% {
+                    transform: rotate(90deg) scale(1.2);
+                    filter: hue-rotate(90deg);
+                    opacity: 0.8;
+                }
+                50% {
+                    transform: rotate(180deg) scale(1);
+                    filter: hue-rotate(180deg);
+                    opacity: 1;
+                }
+                75% {
+                    transform: rotate(270deg) scale(1.2);
+                    filter: hue-rotate(270deg);
+                    opacity: 0.8;
+                }
+                100% {
+                    transform: rotate(360deg) scale(1);
+                    filter: hue-rotate(360deg);
+                    opacity: 1;
+                }
+            }
+        </style>
+        <title>Page Generation in Progress</title>
+    </head>
+
+    <body
+        class="bg-cover bg-center min-h-screen flex flex-col justify-center items-center"
+        style="
+            background-image: url(&quot;https://t3.ftcdn.net/jpg/00/65/47/90/360_F_65479071_5hGl2iiCLvCzGbCyQbDEKWm2chQm9XF5.jpg&quot;);
+        "
+    >
+        <div
+            class="bg-opacity-50 bg-gray-800 text-white p-10 border-2 border-black rounded-lg shadow-lg w-4/5 md:w-1/2 lg:w-1/3 mb-8"
+        >
+            <div class="text-center mb-4">
+                <h1 class="text-4xl font-bold mb-2">
+                    Page Generation in Progress
+                </h1>
+                <p class="text-lg">
+                    Please wait while we prepare your content.
+                </p>
+            </div>
+            <img
+                src="https://i.pinimg.com/originals/f9/3f/a3/f93fa330c3d76ccb5b0fa94e6d10e3cf.png"
+                class="w-24 mx-auto"
+                id="spinning-burger"
+                alt="Spinning Burger"
+            />
+        </div>
+        <form
+            id="generate-form"
+            method="post"
+            action="/generate"
+            class="hidden"
+        >
+            <input type="hidden" name="user_input" value="{{ user_input }}" />
+            <input type="hidden" name="theme" value="{{ theme }}" />
+            <input type="hidden" name="safe_images" value="{{ safe }}" />
+            <input
+                type="hidden"
+                name="page_visibility"
+                value="{{ visibility }}"
+            />
+            <input type="hidden" name="mode" value="{{ mode }}" />
+        </form>
+        <script type="text/javascript">
+            const evtSource = new EventSource("/stream");
+
+            evtSource.onmessage = function (event) {
+                $("#status").append(`<p>${event.data}</p>`);
+                if (event.data === "Generation completed") {
+                    evtSource.close();
+                }
+            };
+        </script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () =>
+                setTimeout(
+                    () => document.getElementById("generate-form").submit(),
+                    100,
+                ),
+            );
+        </script>
+    </body>
+</html>
