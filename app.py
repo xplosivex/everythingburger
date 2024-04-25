@@ -711,7 +711,7 @@ def generate_and_update():
 
 def query_image_with_prompt(prompt):
     params = {
-        'api_key': '2283D18DBA3A44C08727AD773F6E4EDB',
+        'api_key': '',
         'q': prompt,
         'search_type': 'images',
         'num': 1,
