@@ -36,7 +36,7 @@ openai.api_key = ""
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pages.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
-app.secret_key = ''  # Set a secret key for session management
+app.secret_key = '' 
 
 challenges = [
     {"title": "The Whimsical Word Wizard", "description": "Generate a page containing the word 'wizard'."},
@@ -95,11 +95,9 @@ items_for_purchase = {
     "shitpost_mode": {"description": "Generate pages as if you were a dorito loving based and red pilled redditor." , "cost": 150}
 
 }}
-# Assuming 'app' is your Flask app variable
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
-# Initialize login manager
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -114,13 +112,13 @@ class User(db.Model, UserMixin):
     generated_pages_count = db.Column(db.Integer, default=0)
     sesame_seeds = db.Column(db.Integer, default=0,nullable=False)
     extra_storage = db.Column(db.Integer, default=0, nullable=False)
-    bio = db.Column(db.Text, default=lambda: None)  # New field for bio
-    profile_picture_url = db.Column(db.String(512), default="https://img.freepik.com/free-vector/hamburger_53876-25481.jpg")  # New field for profile picture URL
+    bio = db.Column(db.Text, default=lambda: None)  
+    profile_picture_url = db.Column(db.String(512), default="https://img.freepik.com/free-vector/hamburger_53876-25481.jpg")  
     proudest_achievement = db.Column(db.Text, default=lambda: None)
 
 
     def generate_reset_string(self):
-        self.reset_string = secrets.token_hex(16)  # Generates a secure hex string
+        self.reset_string = secrets.token_hex(16)  
         db.session.commit()
         return self.reset_string
 
@@ -139,11 +137,11 @@ class GeneratedPage(db.Model):
     summary = db.Column(db.Text, nullable=False)
     mode = db.Column(db.String(120), nullable=True, default="regular")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Use foreign key to User ID
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  
     is_unlisted = db.Column(db.Boolean, default=False)
     user = db.relationship('User', backref=db.backref('pages', lazy=True))
 
-# Initialize db at the first run
+
 class PageLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     page_id = db.Column(db.Integer, db.ForeignKey('generated_page.id'), nullable=False)
@@ -178,8 +176,8 @@ class CompletedChallenge(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     challenge_title = db.Column(db.String(255), nullable=False)
-    challenge_description = db.Column(db.Text, nullable=False)  # New field to store the challenge description
-    completion_date = db.Column(db.DateTime, default=datetime.utcnow)  # Existing definitions...
+    challenge_description = db.Column(db.Text, nullable=False)  
+    completion_date = db.Column(db.DateTime, default=datetime.utcnow)  
 
     user = db.relationship('User', backref=db.backref('completed_challenges', lazy=True))
 
@@ -202,7 +200,7 @@ def complete_challenge(user, challenge_title):
     challenge = next((ch for ch in challenges if ch['title'] == challenge_title), None)
 
     if challenge:
-        # Check if this challenge has already been completed by the user
+        
         existing_challenge = CompletedChallenge.query.filter_by(
             user_id=user.id, challenge_title=challenge['title']).first()
         if not existing_challenge:
@@ -214,7 +212,7 @@ def complete_challenge(user, challenge_title):
             db.session.add(completed_challenge)
             db.session.commit()
             logging.info(f"Challenge '{challenge_title}' completed by user {user.username}")
-            return True  # Challenge was marked as completed
+            return True  
 
     return False
 
@@ -227,30 +225,29 @@ def query_valueserpapi(query,safe="active"):
       'safe': f'{safe}'
     }
 
-    # make the http GET request to VALUE SERP
+    
     api_result = requests.get('', params)
 
-    # get the JSON response from VALUE SERP
+    
     data = api_result.json()
     try:
         if 'image_results' in data and data['image_results']:
             url_conversion = data["image_results"]
 
-            for attempt in range(2):  # Attempt to find a working image URL up to 5 times
+            for attempt in range(2):  
                 random_image_info = random.choice(url_conversion)
                 image_url = random_image_info["image"]
                 response = requests.head(image_url, allow_redirects=True)
 
                 if response.status_code != 404:
-                    return image_url  # This image URL works, return it
+                    return image_url  
                 else:
-            	    return None  # After several attempts no valid image URL was found
+            	    return None  
         else:
             return None
     except Exception as e:
         return None
-    # make the http GET request to VALUE SERP
-
+    
 
 def load_inputs():
     with open('inputs.yml', 'r') as file:
@@ -274,7 +271,6 @@ def generate_html(user_input, theme, safe,user_id, mode, app):
     elif mode == "shitpost_mode":
         prompt = "shitposter_prompt"
     else:
-        # FALL BACK INCASE ERROR
         prompt = "html_prompt"
     formatted_prompt = inputs['prompts'][prompt].format(
             user_input=user_input,
@@ -291,7 +287,6 @@ def generate_html(user_input, theme, safe,user_id, mode, app):
     )
     with app.app_context():
         user = User.query.get(user_id)
-        # Make sure the user exists before attempting to access attributes
         if 'poop' in response['choices'][0]['text'].lower():
             complete_challenge(user, "The Fecal Fanatic")
         if 'wizard' in response['choices'][0]['text'].lower():
@@ -338,7 +333,7 @@ def store_template():
 def delete_template(template_id):
     template = Template.query.get_or_404(template_id)
     if template.user_id != current_user.id:
-        abort(403)  # Only allow deletion by the template owner
+        abort(403)  
     db.session.delete(template)
     db.session.commit()
     return jsonify({"message": "Template deleted successfully"}), 204
@@ -362,14 +357,11 @@ def load_templates():
 @app.route('/load/templates/<int:template_id>', methods=['GET'])
 @login_required
 def load_template_by_id(template_id):
-    # Query the database for a template with the given template_id belonging to the current user
     template = Template.query.filter_by(id=template_id, user_id=current_user.id).first()
 
-    # If the template is not found, return a 404 error
     if template is None:
         return jsonify({"error": "Template not found"}), 404
 
-    # If the template is found, return its details
     template_details = {
         'template_id': template.id,
         'template_name': template.template_name,
@@ -384,7 +376,7 @@ def load_template_by_id(template_id):
 
 
 @app.route('/challenges')
-@login_required  # Ensure only logged-in users can access
+@login_required  
 def challenge():
     return render_template('challenges.html', current_username=current_user.username)
 
@@ -404,7 +396,7 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
-        # Here, instead of redirecting or rendering, we return a JSON response
+        
         return jsonify(success=True, reset_string=reset_string, message='Signup successful. Please save your reset string securely.')
 
     return render_template('signup.html')
@@ -458,7 +450,6 @@ def comment_page(uuid):
     page = GeneratedPage.query.filter_by(uuid=uuid).first_or_404()
     comment_text = request.form.get('comment')
 
-    # Sanitize comment_text here using Bleach
     sanitized_comment = bleach.clean(comment_text, strip=True)
 
     if len(sanitized_comment.split()) >= 50:
@@ -473,7 +464,7 @@ def comment_page(uuid):
     return jsonify(success=False, message="Comment text is required.")
 
 @app.route('/api/completed-challenges/<username>')
-@login_required  # Ensure only logged-in users can access
+@login_required  
 def get_completed_challenges(username):
     global challenges
     user_sesame_seeds = current_user.sesame_seeds
@@ -506,7 +497,6 @@ def get_completed_challenges(username):
     completed_challenges = CompletedChallenge.query.filter_by(user_id=user.id).all()
     completed_challenge_titles = [challenge.challenge_title for challenge in completed_challenges]
 
-    # Identifying uncompleted challenges
     all_challenges = {ch["title"]: ch for ch in challenges}
     uncompleted_challenges = [{"title": title, "description": all_challenges[title]["description"], "completion_date": None} for title in all_challenges if title not in completed_challenge_titles]
 
@@ -566,7 +556,7 @@ def api_pages():
                         'text': comment.comment_text,
                         'user_id': comment.user_id,
                         'username': comment.user.username,
-                        'created_at': comment.created_at.isoformat()  # ISO 8601 format
+                        'created_at': comment.created_at.isoformat()  
                     } for comment in page.comments
                 ]
             } for page in saved_pages
@@ -602,12 +592,8 @@ def purchase_item(item_type, item_name):
 @app.route('/dev/gain-seeds')
 @login_required
 def gain_seeds():
-    # Add a condition to restrict access to this route in a production environment
-    # For example, check if the app is in debug mode or if the user is authorized as a developer
     if not app.debug:
         return jsonify(success=False, message="This route is not available."), 403
-
-    # Assuming the current_user is the user object thanks to flask_login's @login_required
     current_user.sesame_seeds += 100
     db.session.commit()
     return jsonify(success=True, message="100 sesame seeds added successfully!")
@@ -620,11 +606,10 @@ def login():
         user = User.query.filter(func.lower(User.username) == func.lower(username)).first()
         if user is None or not user.check_password(password):
             flash('Invalid username or password.', 'error')
-            time.sleep(1)# Correct the flash message to reflect the actual error
+            time.sleep(1)
             return redirect(url_for('login'))
         login_user(user)
-        # Redirect to index.html or the desired page after login
-        return redirect(url_for('index'))  # redirect to the index function (which should be protected)
+        return redirect(url_for('index'))  
     return render_template("login.html")
 
 @app.route('/logout')
@@ -661,9 +646,9 @@ def update_image_urls_in_html(html_content, safe,id):
                 if new_src:
                     img['src'] = new_src
                 else:
-                    img.decompose()  # Remove the image if no new source is found
+                    img.decompose()  
             else:
-                img.decompose()  # Remove any images beyond the first two
+                img.decompose()  
         return str(soup)
     except Exception as e:
         logging.error(f"Error updating image URLs: {e}", exc_info=True)
@@ -679,9 +664,7 @@ def get_theme_name_by_description(description):
         if details['description'] == description:
             return name
     return None
-  # Adjust based on expected frequency of updates
-
-
+	
 @app.route('/generate', methods=['POST'])
 def generate_and_update():
     data = request.form
@@ -705,7 +688,7 @@ def generate_and_update():
     user_sesame_seeds = current_user.sesame_seeds
     db.session.commit()
     complete_challenge(current_user, "The Page Professional")
-    app = current_app._get_current_object()  # Get the current Flask app object
+    app = current_app._get_current_object()  
     with ThreadPoolExecutor() as executor:
         future = executor.submit(generate_html, user_input, theme, safe, current_user.get_id(), mode, app)
         generated_html_content = future.result()
@@ -738,13 +721,13 @@ def query_image_with_prompt(prompt):
     data = response.json()
     if 'image_results' in data and data['image_results']:
         url_conversion = data["image_results"]
-        for attempt in range(2):  # Attempt to find a working image URL up to 5 times
+        for attempt in range(2):  
             random_image_info = random.choice(url_conversion)
             image_url = random_image_info["image"]
             response = requests.head(image_url, allow_redirects=True)
 
             if response.status_code != 404:
-                return image_url  # This image URL works, return it
+                return image_url  
             else:
         	    return None
     else:
@@ -781,7 +764,6 @@ def index():
         user_input = data['user_input']
         theme = data['theme']
         visibility = data['page_visibility']
-        # Retrieve values from sliders
         return render_template(
             'loading.html',
             user_input=user_input,
@@ -793,13 +775,10 @@ def index():
 
     logging.info("GET request received, rendering index page")
     owned_themes = set(p.item_name for p in current_user.purchases if p.item_type == 'themes')
-    # Add the 'silly' theme by default
     owned_themes.add('silly')
     owned_modes = set(p.item_name for p in current_user.purchases if p.item_type == 'modes')
     owned_modes.add('regular_mode')
-    # Construct the list of themes with their descriptions to pass to the template.
     themes_for_template = [{'name': theme, 'description': items_for_purchase['themes'][theme]['description']} for theme in owned_themes]
-    # Check if the user has already purchased an increase in prompt length, otherwise default to 250.
     prompt_length = next((items_for_purchase['Prompt Length Increase']['prompt_length']['length'] for p in current_user.purchases if p.item_type == 'Prompt Length Increase'), 250)
     page_generation_count = track_page_generation_count(False)
     try:
@@ -808,7 +787,7 @@ def index():
         total_files = 0
     return render_template(
         'index.html',
-        theme_groups=themes_for_template,  # Pass the correct variable here
+        theme_groups=themes_for_template,  
         total_files=total_files,
         page_generation_count=page_generation_count,
         current_username=current_user.username,
@@ -833,14 +812,13 @@ def view_profile(username):
     user_completed_challenges = CompletedChallenge.query.filter_by(user_id=user.id).all()
     completed_count = len(user_completed_challenges)
 
-    # Define the user's proudest achievement or a default message.
     proudest_achievement = user.proudest_achievement if user.proudest_achievement else "No Achievement chosen"
     initial_quota = 10  # Assuming the initial quota is 10
     total_storage_quota = initial_quota + user.extra_storage
     current_storage_used = len(user.pages)
     isCurrentUser = username == current_user.username
     return jsonify({
-        'id': user.id if isCurrentUser else None,  # Only expose ID if the user is viewing their own profile
+        'id': user.id if isCurrentUser else None,  
         'username': user.username,
         'generated_pages_count': user.generated_pages_count,
         'sesame_seeds': user.sesame_seeds,  # Sensitive data guarded
@@ -861,7 +839,7 @@ def view_profile(username):
                 'created_at': page.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 'summary': page.summary,
                 'is_unlisted': page.is_unlisted
-            } for page in user.pages if not page.is_unlisted or isCurrentUser   # Adjusted the filtering condition here
+            } for page in user.pages if not page.is_unlisted or isCurrentUser   
         ],
         'likes_sent': len(user.page_likes),
         'comments_sent': len(user.page_comments)
@@ -870,20 +848,20 @@ def view_profile(username):
 @app.route('/profile/customize', methods=['POST'])
 @login_required
 def customize_profile():
-    user = current_user  # Direct reference to the logged-in user
+    user = current_user 
     bio = request.form.get('bio', None)
     proudest_achievement = request.form.get('proudest_achievement', None)
     prompt = request.form.get('image_search_prompt')
     if bio is not None and len(bio) < 150:
-        sanitized_bio = bleach.clean(bio, strip=True)  # You can customize the allowed tags, attributes, and styles if needed.
+        sanitized_bio = bleach.clean(bio, strip=True)  
         user.bio = sanitized_bio
     if prompt:
-        image_url = query_image_with_prompt(prompt)  # Your existing or adjusted function for SERP API
+        image_url = query_image_with_prompt(prompt)  
         if image_url:
             user.profile_picture_url = image_url
         else:
             flash('No image found for the provided prompt.', 'warning')
-            # Optionally, reset to default or leave unchanged
+            
     else:
         pass
 
@@ -917,9 +895,9 @@ def profile(username):
 def delete_page(uuid):
     page = GeneratedPage.query.filter_by(uuid=uuid).first_or_404()
     if page.user_id != current_user.id:
-        abort(403)  # Forbidden access if the user doesn't own the page
-    PageLike.query.filter_by(page_id=page.id).delete()  # Delete likes associated with the page
-    PageComment.query.filter_by(page_id=page.id).delete()  # Delete comments associated with the page
+        abort(403) 
+    PageLike.query.filter_by(page_id=page.id).delete()  
+    PageComment.query.filter_by(page_id=page.id).delete()  
     db.session.delete(page)
     db.session.commit()
     complete_challenge(current_user,"The Page Punisher")
@@ -955,7 +933,7 @@ def save_page():
         user_input=data['user_input'],
         html_content=data['html_content'],
         summary=summary,
-        user_id=current_user.id, # Use the current logged-in user's username
+        user_id=current_user.id,
         is_unlisted=is_unlisted,
     	mode=data["mode"]
     )
@@ -976,7 +954,6 @@ def browse():
 @app.route('/view/<uuid>')
 def view_page(uuid):
     page = GeneratedPage.query.filter_by(uuid=uuid).first_or_404()
-    # Here, you might want to render the HTML content directly or in your preferred way
     return render_template('view.html', page=page)
 
 @app.route('/usepolicy')
@@ -1006,7 +983,7 @@ def generate_name():
         prompt=inputs['prompts']['website_name_prompt'].format(modifier=random.choice(modifiers)),
         max_tokens=inputs['tokens']['website_name_token_size'],
         temperature=inputs['parameters']['temperature'],
-        top_p=inputs['parameters']['top_p'] # add this line
+        top_p=inputs['parameters']['top_p'] 
     )
     return jsonify({"name": response.choices[0].text.strip().strip('"')})
 
@@ -1018,7 +995,6 @@ def leaderboard():
 def leaderboard_api():
     search_username = request.args.get("username", "").strip().lower()
 
-    # Subquery for counting likes received from others on the user's generated pages
     subquery_likes = db.session.query(
         GeneratedPage.user_id,
         func.count(PageLike.id).label('likes_count')
@@ -1026,7 +1002,6 @@ def leaderboard_api():
     ).filter(GeneratedPage.user_id != PageLike.user_id
     ).group_by(GeneratedPage.user_id).subquery()
 
-    # Subquery for counting comments received from others on the user's generated pages
     subquery_comments = db.session.query(
         GeneratedPage.user_id,
         func.count(PageComment.id).label('comments_count')
@@ -1034,13 +1009,11 @@ def leaderboard_api():
     ).filter(GeneratedPage.user_id != PageComment.user_id
     ).group_by(GeneratedPage.user_id).subquery()
 
-    # Subquery for counting generated (saved) pages per user
     subquery_saved_pages = db.session.query(
         GeneratedPage.user_id,
         func.count('*').label('saved_pages_count')
     ).group_by(GeneratedPage.user_id).subquery()
 
-    # Main query adjusted to include saved pages count and exclude self-likes and self-comments
     rank_query = db.session.query(
         User.profile_picture_url,
 	User.username,
@@ -1062,11 +1035,9 @@ def leaderboard_api():
     ).subquery()
 
     if search_username:
-        # Applying a filter on original subquery, extracting all including rank
         final_query = db.session.query(rank_query).filter(func.lower(rank_query.c.username).like(f"%{search_username}%"))
         total_results = final_query.count()
     else:
-        # If no specific search, just organize data from first query
         final_query = db.session.query(rank_query)
         total_results = final_query.count()
 
@@ -1080,7 +1051,7 @@ def leaderboard_api():
         "likes_received": user.likes_received,
         "comments_received": user.comments_received,
         "sesame_seeds": user.sesame_seeds,
-        "total_results": total_results  # Optional, gives an idea of total users in the query
+        "total_results": total_results 
     } for user in users]
 
     return jsonify(leaderboard)
